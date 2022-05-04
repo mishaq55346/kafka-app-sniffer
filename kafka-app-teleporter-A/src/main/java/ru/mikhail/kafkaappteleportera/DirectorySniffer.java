@@ -40,6 +40,7 @@ public class DirectorySniffer {
                             kafkaSender.send(
                                     new FileDTO(file.getRelativeName(),
                                             Files.readAllBytes(file.getFile().toPath())));
+                            file.getFile().delete();
                         } catch (IOException e) {
                             log.error("Error occurred while reading file.");
                         }
