@@ -28,8 +28,6 @@ import java.nio.file.StandardOpenOption;
 @Log4j2
 @SpringBootApplication
 public class KafkaAppTeleporterBApplication {
-    @Value("${teleporter.base-folder}")
-    private String baseFolder;
     @Value("${teleporter.copy-folder}")
     private String folder;
 
@@ -41,7 +39,7 @@ public class KafkaAppTeleporterBApplication {
         OpenOption openOption = StandardOpenOption.CREATE;
         FileDTO file = new ObjectMapper().readValue(record.value(), FileDTO.class);
         try {
-            Files.write(new File(baseFolder+folder+file.getName()).toPath(),
+            Files.write(new File(folder + file.getName()).toPath(),
                     file.getContent(),
                     openOption);
         } catch (IOException e) {

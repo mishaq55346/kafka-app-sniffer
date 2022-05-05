@@ -20,22 +20,29 @@ import java.nio.file.Files;
 @Log4j2
 @PropertySource("classpath:application.properties")
 public class DirectorySniffer {
-    @Value("${teleporter.base-folder}")
-    private String projectPath;
     @Value("${teleporter.monitoring-folder}")
-    private String folder;
+    private String monitoringFolderPath;
 
     @Autowired
     private KafkaSender kafkaSender;
 
     @PostConstruct
     private void runScan() {
+        File monitoringFolder = new File(monitoringFolderPath);
+        if (monitoringFolder == null || !monitoringFolder.isDirectory()){
+            log.error("Can't instantiate directory. Check path");
+        }
+        if (!monitoringFolder.exists()){
+            log.info("No directory found. Creating new one");
+            monitoringFolder.mkdir();
+        }
         FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
-        fileSystemWatcher.addSourceDirectory(new File(projectPath + folder));
+        fileSystemWatcher.addSourceDirectory(monitoringFolder);
         fileSystemWatcher.addListener(changeSet -> {
             for (ChangedFiles changedFiles : changeSet) {
                 for (ChangedFile file : changedFiles.getFiles()) {
                     if (file.getType() == ChangedFile.Type.ADD) {
+                        log.info("Teleporting file [" + file.getRelativeName() + "]");
                         try {
                             ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
                                     new FileDTO(file.getRelativeName(),
@@ -49,10 +56,11 @@ public class DirectorySniffer {
             }
         });
         fileSystemWatcher.start();
+        log.info("File Watcher started");
     }
 
     private void successSendHandler(SendResult<Long, FileDTO> fileDTOSendResult) {
-        File file = new File(projectPath + folder + fileDTOSendResult.getProducerRecord().value().getName());
+        File file = new File(monitoringFolderPath + fileDTOSendResult.getProducerRecord().value().getName());
         file.delete();
         log.info("File [" + fileDTOSendResult.getProducerRecord().value().getName() + "] teleported.");
     }

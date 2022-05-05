@@ -18,7 +18,9 @@ import java.util.Map;
 @PropertySource("classpath:application.properties")
 public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
-    private String kafkaServer="localhost:9092";
+    private String kafkaServer;
+    @Value("${kafka.max.request.size}")
+    private int maxRequestSize;
 
     @Bean
     public Map<String, Object> producerConfigs() {
@@ -29,6 +31,12 @@ public class KafkaConfig {
                 LongSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,
                 JsonSerializer.class);
+        props.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,
+                maxRequestSize);
+
+        props.put(ProducerConfig.BATCH_SIZE_CONFIG, maxRequestSize);
+        props.put(ProducerConfig.RECEIVE_BUFFER_CONFIG, maxRequestSize);
+        props.put(ProducerConfig.SEND_BUFFER_CONFIG, maxRequestSize);
         return props;
     }
 

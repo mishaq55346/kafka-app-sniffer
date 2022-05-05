@@ -22,6 +22,10 @@ public class KafkaConfig {
     @Value("${spring.kafka.bootstrap-servers}")
     private String kafkaServer = "localhost:9092";
 
+    @Value("${kafka.fetch.partition.max.bytes}")
+    private int kafkaMaxPartitionSize;
+    @Value("${kafka.fetch.max.bytes}")
+    private int kafkaMaxFetchSize;
     @Value("${spring.kafka.consumer.group-id}")
     private String kafkaGroupId;
 
@@ -32,6 +36,10 @@ public class KafkaConfig {
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, LongDeserializer.class);
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);// TODO try with json deserialize
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaGroupId);
+        props.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, kafkaMaxFetchSize);
+        props.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, kafkaMaxPartitionSize);
+        props.put(ConsumerConfig.SEND_BUFFER_CONFIG, kafkaMaxPartitionSize);
+        props.put(ConsumerConfig.RECEIVE_BUFFER_CONFIG, kafkaMaxPartitionSize);
         return props;
     }
 
