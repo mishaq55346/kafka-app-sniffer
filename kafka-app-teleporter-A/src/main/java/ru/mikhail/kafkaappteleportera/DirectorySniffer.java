@@ -5,9 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.devtools.filewatch.ChangedFile;
 import org.springframework.boot.devtools.filewatch.ChangedFiles;
-import org.springframework.boot.devtools.filewatch.FileChangeListener;
 import org.springframework.boot.devtools.filewatch.FileSystemWatcher;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
@@ -17,15 +15,14 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 
 @Service
 @Log4j2
 @PropertySource("classpath:application.properties")
 public class DirectorySniffer {
-    @Value("${sniffer.base-folder}")
+    @Value("${teleporter.base-folder}")
     private String projectPath;
-    @Value("${sniffer.monitoring-folder}")
+    @Value("${teleporter.monitoring-folder}")
     private String folder;
 
     @Autowired
