@@ -31,6 +31,7 @@ public class DirectorySniffer {
         File monitoringFolder = new File(monitoringFolderPath);
         if (monitoringFolder == null || !monitoringFolder.isDirectory()){
             log.error("Can't instantiate directory. Check path");
+            System.exit(-1);
         }
         if (!monitoringFolder.exists()){
             log.info("No directory found. Creating new one");
@@ -60,6 +61,9 @@ public class DirectorySniffer {
     }
 
     private void successSendHandler(SendResult<Long, FileDTO> fileDTOSendResult) {
+        if (!monitoringFolderPath.endsWith("/")) {
+            monitoringFolderPath += "/";
+        }
         File file = new File(monitoringFolderPath + fileDTOSendResult.getProducerRecord().value().getName());
         file.delete();
         log.info("File [" + fileDTOSendResult.getProducerRecord().value().getName() + "] teleported.");

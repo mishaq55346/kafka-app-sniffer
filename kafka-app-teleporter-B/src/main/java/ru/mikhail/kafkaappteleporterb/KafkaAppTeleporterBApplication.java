@@ -33,9 +33,9 @@ public class KafkaAppTeleporterBApplication {
 
     @KafkaListener(topics = "file-topic")
     private void msgListener(ConsumerRecord<Long, String> record) throws JsonProcessingException {
-        System.out.println("======================================");
-        System.out.println(record.key());
-        System.out.println("======================================");
+        if (!folder.endsWith("/")) {
+            folder += "/";
+        }
         OpenOption openOption = StandardOpenOption.CREATE;
         FileDTO file = new ObjectMapper().readValue(record.value(), FileDTO.class);
         try {

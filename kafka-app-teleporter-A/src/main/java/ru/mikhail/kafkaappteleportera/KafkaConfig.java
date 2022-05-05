@@ -33,10 +33,6 @@ public class KafkaConfig {
                 JsonSerializer.class);
         props.put(ProducerConfig.MAX_REQUEST_SIZE_CONFIG,
                 maxRequestSize);
-
-        props.put(ProducerConfig.BATCH_SIZE_CONFIG, maxRequestSize);
-        props.put(ProducerConfig.RECEIVE_BUFFER_CONFIG, maxRequestSize);
-        props.put(ProducerConfig.SEND_BUFFER_CONFIG, maxRequestSize);
         return props;
     }
 

@@ -38,8 +38,6 @@ public class KafkaConfig {
         props.put(ConsumerConfig.GROUP_ID_CONFIG, kafkaGroupId);
         props.put(ConsumerConfig.FETCH_MAX_BYTES_CONFIG, kafkaMaxFetchSize);
         props.put(ConsumerConfig.MAX_PARTITION_FETCH_BYTES_CONFIG, kafkaMaxPartitionSize);
-        props.put(ConsumerConfig.SEND_BUFFER_CONFIG, kafkaMaxPartitionSize);
-        props.put(ConsumerConfig.RECEIVE_BUFFER_CONFIG, kafkaMaxPartitionSize);
         return props;
     }
 
