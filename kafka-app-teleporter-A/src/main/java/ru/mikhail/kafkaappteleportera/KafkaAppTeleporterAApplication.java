@@ -17,5 +17,4 @@ public class KafkaAppTeleporterAApplication {
     public static void main(String[] args) {
         SpringApplication.run(KafkaAppTeleporterAApplication.class, args);
     }
-
 }

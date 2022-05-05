@@ -29,11 +29,11 @@ public class DirectorySniffer {
     @PostConstruct
     private void runScan() {
         File monitoringFolder = new File(monitoringFolderPath);
-        if (monitoringFolder == null || !monitoringFolder.isDirectory()){
+        if (monitoringFolder == null || !monitoringFolder.isDirectory()) {
             log.error("Can't instantiate directory. Check path");
             System.exit(-1);
         }
-        if (!monitoringFolder.exists()){
+        if (!monitoringFolder.exists()) {
             log.info("No directory found. Creating new one");
             monitoringFolder.mkdir();
         }
