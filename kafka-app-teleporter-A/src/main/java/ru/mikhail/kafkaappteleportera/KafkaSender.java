@@ -13,9 +13,7 @@ public class KafkaSender {
     @Autowired
     private KafkaTemplate<Long, FileDTO> kafkaTemplate;
 
-    public void send(FileDTO file) {
-        ListenableFuture<SendResult<Long, FileDTO>> sendResult
-                = kafkaTemplate.send("file-topic", 0L, file);
-        sendResult.addCallback(log::debug, log::error);
+    public ListenableFuture<SendResult<Long, FileDTO>> send(FileDTO file) {
+        return kafkaTemplate.send("file-topic", 0L, file);
     }
 }
