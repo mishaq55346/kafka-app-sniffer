@@ -16,6 +16,15 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
 
+    <dependencies>
+        <dependency>
+            <groupId>ru.mikhail</groupId>
+            <artifactId>kafka-app-sniffer</artifactId>
+            <version>0.0.1-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

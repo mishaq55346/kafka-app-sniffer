@@ -1,4 +1,4 @@
-package ru.mikhail.kafkaappteleporterb;
+package common;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

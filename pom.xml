@@ -20,6 +20,7 @@
     <modules>
         <module>kafka-app-teleporter-A</module>
         <module>kafka-app-teleporter-B</module>
+        <module>kafka-app-teleporter-B2</module>
     </modules>
 
     <dependencies>
