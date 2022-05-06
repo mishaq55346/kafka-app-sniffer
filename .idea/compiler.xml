@@ -8,12 +8,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="kafka-app-teleporter-A" />
-      </profile>
-      <profile name="Annotation profile for kafka-app-sniffer" enabled="true">
-        <sourceOutputDir name="../kafka-app-teleporter-B2/target/generated-sources/annotations" />
-        <sourceTestOutputDir name="../kafka-app-teleporter-B2/target/generated-test-sources/test-annotations" />
-        <outputRelativeToContentRoot value="true" />
         <module name="kafka-app-teleporter-B" />
+        <module name="kafka-app-teleporter-B2" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>

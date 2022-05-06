@@ -4,8 +4,6 @@
     <option name="originalFiles">
       <list>
         <option value="$PROJECT_DIR$/pom.xml" />
-        <option value="$PROJECT_DIR$/kafka-app-teleporter-B/pom.xml" />
-        <option value="$PROJECT_DIR$/kafka-app-teleporter-A/pom.xml" />
       </list>
     </option>
   </component>

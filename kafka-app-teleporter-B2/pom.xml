@@ -7,10 +7,10 @@
         <groupId>ru.mikhail</groupId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>kafka-app-teleporter-B</artifactId>
+    <artifactId>kafka-app-teleporter-B2</artifactId>
     <version>0.0.1-SNAPSHOT</version>
-    <name>kafka-app-teleporter-B</name>
-    <description>kafka-app-teleporter-B</description>
+    <name>kafka-app-teleporter-B2</name>
+    <description>kafka-app-teleporter-B2</description>
     <properties>
         <java.version>17</java.version>
     </properties>
