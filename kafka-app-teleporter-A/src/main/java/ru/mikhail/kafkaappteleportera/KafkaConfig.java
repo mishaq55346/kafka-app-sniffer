@@ -1,6 +1,7 @@
 package ru.mikhail.kafkaappteleportera;
 
 import common.FileDTO;
+import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.LongSerializer;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,6 +23,11 @@ public class KafkaConfig {
     private String kafkaServer;
     @Value("${kafka.max.request.size}")
     private int maxRequestSize;
+
+    @Bean
+    public NewTopic topic1() {
+        return new NewTopic("file-topic", 2, (short) 2);
+    }
 
     @Bean
     public Map<String, Object> producerConfigs() {
