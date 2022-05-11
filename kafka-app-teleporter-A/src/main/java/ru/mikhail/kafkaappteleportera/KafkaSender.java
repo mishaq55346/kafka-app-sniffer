@@ -1,5 +1,6 @@
 package ru.mikhail.kafkaappteleportera;
 
+import common.FileDTO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -13,7 +14,11 @@ public class KafkaSender {
     @Autowired
     private KafkaTemplate<Long, FileDTO> kafkaTemplate;
 
-    public ListenableFuture<SendResult<Long, FileDTO>> send(FileDTO file) {
-        return kafkaTemplate.send("file-topic", 0L, file);
+    public int getPartitionsCount() {
+        return kafkaTemplate.partitionsFor("file-topic").size();
+    }
+
+    public ListenableFuture<SendResult<Long, FileDTO>> send(FileDTO file, int partition) {
+        return kafkaTemplate.send("file-topic", partition, 1L, file);
     }
 }

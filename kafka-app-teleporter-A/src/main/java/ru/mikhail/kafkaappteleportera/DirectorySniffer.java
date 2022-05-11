@@ -1,5 +1,6 @@
 package ru.mikhail.kafkaappteleportera;
 
+import common.FileDTO;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -45,10 +46,12 @@ public class DirectorySniffer {
                     if (file.getType() == ChangedFile.Type.ADD) {
                         log.info("Teleporting file [" + file.getRelativeName() + "]");
                         try {
-                            ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
-                                    new FileDTO(file.getRelativeName(),
-                                            Files.readAllBytes(file.getFile().toPath())));
-                            sendResult.addCallback(this::successSendHandler, log::error);
+                            for (int i = 0; i < kafkaSender.getPartitionsCount(); i++) {
+                                ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
+                                        new FileDTO(file.getRelativeName(),
+                                                Files.readAllBytes(file.getFile().toPath())), i);
+                                sendResult.addCallback(this::successSendHandler, log::error);
+                            }
                         } catch (IOException e) {
                             log.error("Error occurred while reading file.");
                         }
@@ -66,8 +69,10 @@ public class DirectorySniffer {
         }
         File file = new File(monitoringFolderPath + fileDTOSendResult.getProducerRecord().value().getName());
         file.delete();
-        log.info("File [" + fileDTOSendResult.getProducerRecord().value().getName() + "] teleported.");
+        log.info("File ["
+                + fileDTOSendResult.getProducerRecord().value().getName()
+                + "] teleported to partition "
+                + fileDTOSendResult.getRecordMetadata().partition()
+                + ".");
     }
-
-
 }

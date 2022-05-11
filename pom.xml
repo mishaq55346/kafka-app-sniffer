@@ -20,6 +20,7 @@
     <modules>
         <module>kafka-app-teleporter-A</module>
         <module>kafka-app-teleporter-B</module>
+        <module>kafka-app-teleporter-B2</module>
     </modules>
 
     <dependencies>
@@ -27,6 +28,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
@@ -54,17 +56,6 @@
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
             <version>2.13.2.1</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.kafka</groupId>
-            <artifactId>spring-kafka-test</artifactId>
-            <scope>test</scope>
         </dependency>
     </dependencies>
 

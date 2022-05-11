@@ -1,4 +1,4 @@
-package ru.mikhail.kafkaappteleporterb;
+package ru.mikhail.kafkaappteleporterb2;
 
 import common.FileDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;

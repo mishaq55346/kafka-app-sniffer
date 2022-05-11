@@ -1,4 +1,4 @@
-package ru.mikhail.kafkaappteleporterb;
+package ru.mikhail.kafkaappteleporterb2;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -22,8 +22,7 @@ public class KafkaMessagesReceiver {
     @Value("${teleporter.copy-folder}")
     private String folder;
 
-    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"0"}),
-            groupId = "group1")
+    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"1"}), groupId = "group1")
     private void msgListener(ConsumerRecord<Long, String> record) throws JsonProcessingException {
         if (!folder.endsWith("/")) {
             folder += "/";
@@ -35,9 +34,7 @@ public class KafkaMessagesReceiver {
         OpenOption openOption = StandardOpenOption.CREATE;
         FileDTO file = new ObjectMapper().readValue(record.value(), FileDTO.class);
         try {
-            Files.write(new File(folder + file.getName()).toPath(),
-                    file.getContent(),
-                    openOption);
+            Files.write(new File(folder + file.getName()).toPath(), file.getContent(), openOption);
         } catch (IOException e) {
             log.error("Failed to write to file");
         }

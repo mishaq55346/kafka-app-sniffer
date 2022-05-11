@@ -5,6 +5,7 @@
       <module fileurl="file://$PROJECT_DIR$/kafka-app-sniffer.iml" filepath="$PROJECT_DIR$/kafka-app-sniffer.iml" />
       <module fileurl="file://$PROJECT_DIR$/kafka-app-teleporter-A/kafka-app-teleporter-A.iml" filepath="$PROJECT_DIR$/kafka-app-teleporter-A/kafka-app-teleporter-A.iml" />
       <module fileurl="file://$PROJECT_DIR$/kafka-app-teleporter-B/kafka-app-teleporter-B.iml" filepath="$PROJECT_DIR$/kafka-app-teleporter-B/kafka-app-teleporter-B.iml" />
+      <module fileurl="file://$PROJECT_DIR$/kafka-app-teleporter-B2/kafka-app-teleporter-B2.iml" filepath="$PROJECT_DIR$/kafka-app-teleporter-B2/kafka-app-teleporter-B2.iml" />
     </modules>
   </component>
 </project>

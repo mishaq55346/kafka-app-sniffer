@@ -7,14 +7,16 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="kafka-app-teleporter-B" />
         <module name="kafka-app-teleporter-A" />
+        <module name="kafka-app-teleporter-B" />
+        <module name="kafka-app-teleporter-B2" />
       </profile>
     </annotationProcessing>
     <bytecodeTargetLevel>
       <module name="kafka-app-sniffer" target="17" />
       <module name="kafka-app-teleporter-A" target="17" />
       <module name="kafka-app-teleporter-B" target="17" />
+      <module name="kafka-app-teleporter-B2" target="17" />
     </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
@@ -22,6 +24,7 @@
       <module name="kafka-app-sniffer" options="-parameters" />
       <module name="kafka-app-teleporter-A" options="-parameters" />
       <module name="kafka-app-teleporter-B" options="-parameters" />
+      <module name="kafka-app-teleporter-B2" options="-parameters" />
     </option>
   </component>
 </project>
