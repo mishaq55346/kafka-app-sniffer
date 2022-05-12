@@ -32,7 +32,19 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-
+                <version>2.6.7</version>
+                <configuration>
+                    <finalName>teleporter-A</finalName>
+                    <mainClass>ru.mikhail.kafkaappteleportera.KafkaAppTeleporterAApplication</mainClass>
+                    <excludeDevtools>false</excludeDevtools>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

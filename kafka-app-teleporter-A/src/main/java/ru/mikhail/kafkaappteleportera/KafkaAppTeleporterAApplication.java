@@ -9,7 +9,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @SpringBootApplication
 @EnableKafka
 @EnableScheduling
-@ComponentScan("commons")
+//@ComponentScan("commons")
 public class KafkaAppTeleporterAApplication {
     public static void main(String[] args) {
         SpringApplication.run(KafkaAppTeleporterAApplication.class, args);

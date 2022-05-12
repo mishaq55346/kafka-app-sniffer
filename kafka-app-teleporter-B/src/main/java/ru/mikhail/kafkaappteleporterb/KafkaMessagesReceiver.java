@@ -24,7 +24,7 @@ public class KafkaMessagesReceiver {
     @Value("${teleporter.copy-folder}")
     private String folder;
 
-    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"${spring.kafka.consumer.partition}}"}),
+    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"${spring.kafka.consumer.partition}"}),
             groupId = "group1")
     private void msgListener(ConsumerRecord<Long, String> record) throws JsonProcessingException {
         if (!folder.endsWith("/")) {
@@ -35,13 +35,15 @@ public class KafkaMessagesReceiver {
             folderFile.mkdir();
         }
         OpenOption openOption = StandardOpenOption.CREATE;
-        FileDTO file = new ObjectMapper().readValue(record.value(), FileDTO.class);
+        FileDTO receivedFile = new ObjectMapper().readValue(record.value(), FileDTO.class);
+        log.info("Received file " + receivedFile.getName());
         try {
-            Files.write(new File(folder + file.getName()).toPath(),
-                    file.getContent(),
+            Files.write(new File(folder + receivedFile.getName()).toPath(),
+                    receivedFile.getContent(),
                     openOption);
+            log.info("Teleported successfully");
         } catch (IOException e) {
-            log.error("Failed to write to file");
+            log.error("Teleportation fail");
         }
     }
 }

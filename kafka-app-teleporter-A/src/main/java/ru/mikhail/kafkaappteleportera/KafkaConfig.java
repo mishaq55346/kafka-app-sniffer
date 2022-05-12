@@ -23,10 +23,12 @@ public class KafkaConfig {
     private String kafkaServer;
     @Value("${kafka.max.request.size}")
     private int maxRequestSize;
+    @Value("${teleporter.kafka.partitions.number}")
+    private int partitionsNumber;
 
     @Bean
-    public NewTopic topic1() {
-        return new NewTopic("file-topic", 2, (short) 2);
+    public NewTopic topic() {
+        return new NewTopic("file-topic", partitionsNumber, (short) 2);
     }
 
     @Bean

@@ -9,6 +9,7 @@ import org.springframework.boot.devtools.filewatch.ChangedFiles;
 import org.springframework.boot.devtools.filewatch.FileSystemWatcher;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 
@@ -17,7 +18,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 
-@Service
+@Component
 @Log4j2
 @PropertySource("classpath:application.properties")
 public class DirectorySniffer {
@@ -26,6 +27,10 @@ public class DirectorySniffer {
 
     @Autowired
     private KafkaSender kafkaSender;
+
+    DirectorySniffer(){
+        System.out.println("=============");
+    }
 
     @PostConstruct
     private void runScan() {
