@@ -2,11 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <parent>
-        <artifactId>kafka-app-sniffer</artifactId>
-        <groupId>ru.mikhail</groupId>
-        <version>0.0.1-SNAPSHOT</version>
-    </parent>
     <artifactId>kafka-app-teleporter-B</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>kafka-app-teleporter-B</name>
@@ -15,22 +10,29 @@
         <java.version>17</java.version>
     </properties>
 
+    <packaging>jar</packaging>
+
+    <parent>
+        <artifactId>kafka-app-teleporter-parent</artifactId>
+        <groupId>ru.mikhail</groupId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+
     <dependencies>
         <dependency>
             <groupId>ru.mikhail</groupId>
-            <artifactId>kafka-app-sniffer</artifactId>
+            <artifactId>teleporter-commons</artifactId>
             <version>0.0.1-SNAPSHOT</version>
-            <scope>compile</scope>
         </dependency>
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+<!--    <build>-->
+<!--        <plugins>-->
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--            </plugin>-->
+<!--        </plugins>-->
+<!--    </build>-->
 
 </project>
