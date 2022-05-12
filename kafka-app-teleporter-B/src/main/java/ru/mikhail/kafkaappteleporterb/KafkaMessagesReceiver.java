@@ -2,10 +2,11 @@ package ru.mikhail.kafkaappteleporterb;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import common.FileDTO;
+import commons.FileDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.annotation.TopicPartition;
 import org.springframework.stereotype.Component;
@@ -18,11 +19,12 @@ import java.nio.file.StandardOpenOption;
 
 @Slf4j
 @Component
+@PropertySource("classpath:application.properties")
 public class KafkaMessagesReceiver {
     @Value("${teleporter.copy-folder}")
     private String folder;
 
-    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"0"}),
+    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"${spring.kafka.consumer.partition}}"}),
             groupId = "group1")
     private void msgListener(ConsumerRecord<Long, String> record) throws JsonProcessingException {
         if (!folder.endsWith("/")) {
