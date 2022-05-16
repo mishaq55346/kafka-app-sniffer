@@ -10,6 +10,7 @@ public class SendResultsHandler {
     private final int filesToSendCount;
     private int sentFilesCount;
     private final List<String> sendFileNames;
+
     public SendResultsHandler(int filesToSendCount) {
         this.filesToSendCount = filesToSendCount;
         sendFileNames = new ArrayList<>();

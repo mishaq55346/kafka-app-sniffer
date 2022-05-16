@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
 @Log4j2
@@ -44,19 +43,15 @@ public class DirectorySniffer {
         fileSystemWatcher.addSourceDirectory(monitoringFolder);
         fileSystemWatcher.addListener(changeSet -> {
             for (ChangedFiles changedFiles : changeSet) {
-
                 List<ChangedFile> addedFiles = changedFiles.getFiles()
                         .stream()
                         .filter(f -> f.getType() == ChangedFile.Type.ADD)
                         .toList();
-
-                if (addedFiles.isEmpty()){
+                if (addedFiles.isEmpty()) {
                     continue;
                 }
-
                 SendResultsHandler handler = new SendResultsHandler(addedFiles.size());
                 for (ChangedFile file : addedFiles) {
-
                     log.info("Teleporting file [" + file.getRelativeName() + "]");
                     try {
                         byte[] fileContent = Files.readAllBytes(file.getFile().toPath());
@@ -67,9 +62,8 @@ public class DirectorySniffer {
                     } catch (IOException e) {
                         log.error("Error occurred while reading file.");
                     }
-
                 }
-                if (handler.successfulDeparture()){
+                if (handler.successfulDeparture()) {
                     deleteFiles(handler.getFileNames());
                 }
             }
