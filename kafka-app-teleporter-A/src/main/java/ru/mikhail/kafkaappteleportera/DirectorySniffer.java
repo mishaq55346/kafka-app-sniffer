@@ -30,6 +30,9 @@ public class DirectorySniffer {
 
     @PostConstruct
     private void runScan() {
+        if (!monitoringFolderPath.endsWith("/")) {
+            monitoringFolderPath += "/";
+        }
         File monitoringFolder = new File(monitoringFolderPath);
         if (!monitoringFolder.isDirectory()) {
             log.error("Can't instantiate directory. Check path");
@@ -58,13 +61,10 @@ public class DirectorySniffer {
                         ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
                                 new FileDTO(file.getRelativeName(),
                                         fileContent));
-                        sendResult.addCallback(handler::handleSuccess, log::error);
+                        sendResult.addCallback(this::handleSuccess, log::error);
                     } catch (IOException e) {
                         log.error("Error occurred while reading file.");
                     }
-                }
-                if (handler.successfulDeparture()) {
-                    deleteFiles(handler.getFileNames());
                 }
             }
         });
@@ -72,18 +72,13 @@ public class DirectorySniffer {
         log.info("File Watcher started");
     }
 
-    private void deleteFiles(List<String> fileNames) {
-        if (!monitoringFolderPath.endsWith("/")) {
-            monitoringFolderPath += "/";
+    private void handleSuccess(SendResult<Long, FileDTO> longFileDTOSendResult) {
+        String fileName = longFileDTOSendResult.getProducerRecord().value().getName();
+        File file = new File(monitoringFolderPath + fileName);
+        if (file.delete()) {
+            log.info("File [" + fileName + "] deleted locally.");
+        } else {
+            log.error("File [" + fileName + "] can not be deleted locally.");
         }
-
-        for (String fileName : fileNames) {
-            File file = new File(monitoringFolderPath + fileName);
-            file.delete();
-            log.info("File ["
-                    + fileName
-                    + "] deleted locally.");
-        }
-
     }
 }
