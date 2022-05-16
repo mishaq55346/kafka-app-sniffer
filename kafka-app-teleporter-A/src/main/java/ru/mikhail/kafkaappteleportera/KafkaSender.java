@@ -14,11 +14,7 @@ public class KafkaSender {
     @Autowired
     private KafkaTemplate<Long, FileDTO> kafkaTemplate;
 
-    public int getPartitionsCount() {
-        return kafkaTemplate.partitionsFor("file-topic").size();
-    }
-
-    public ListenableFuture<SendResult<Long, FileDTO>> send(FileDTO file, int partition) {
-        return kafkaTemplate.send("file-topic", partition, 1L, file);
+    public ListenableFuture<SendResult<Long, FileDTO>> send(FileDTO file) {
+        return kafkaTemplate.send("file-topic", 1L, file);
     }
 }

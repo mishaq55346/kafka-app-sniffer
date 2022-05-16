@@ -10,13 +10,14 @@ import org.springframework.boot.devtools.filewatch.FileSystemWatcher;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.util.concurrent.ListenableFuture;
 
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Log4j2
@@ -28,14 +29,10 @@ public class DirectorySniffer {
     @Autowired
     private KafkaSender kafkaSender;
 
-    DirectorySniffer(){
-        System.out.println("=============");
-    }
-
     @PostConstruct
     private void runScan() {
         File monitoringFolder = new File(monitoringFolderPath);
-        if (monitoringFolder == null || !monitoringFolder.isDirectory()) {
+        if (!monitoringFolder.isDirectory()) {
             log.error("Can't instantiate directory. Check path");
             System.exit(-1);
         }
@@ -47,20 +44,33 @@ public class DirectorySniffer {
         fileSystemWatcher.addSourceDirectory(monitoringFolder);
         fileSystemWatcher.addListener(changeSet -> {
             for (ChangedFiles changedFiles : changeSet) {
-                for (ChangedFile file : changedFiles.getFiles()) {
-                    if (file.getType() == ChangedFile.Type.ADD) {
-                        log.info("Teleporting file [" + file.getRelativeName() + "]");
-                        try {
-                            for (int i = 0; i < kafkaSender.getPartitionsCount(); i++) {
-                                ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
-                                        new FileDTO(file.getRelativeName(),
-                                                Files.readAllBytes(file.getFile().toPath())), i);
-                                sendResult.addCallback(this::successSendHandler, log::error);
-                            }
-                        } catch (IOException e) {
-                            log.error("Error occurred while reading file.");
-                        }
+
+                List<ChangedFile> addedFiles = changedFiles.getFiles()
+                        .stream()
+                        .filter(f -> f.getType() == ChangedFile.Type.ADD)
+                        .toList();
+
+                if (addedFiles.isEmpty()){
+                    continue;
+                }
+
+                SendResultsHandler handler = new SendResultsHandler(addedFiles.size());
+                for (ChangedFile file : addedFiles) {
+
+                    log.info("Teleporting file [" + file.getRelativeName() + "]");
+                    try {
+                        byte[] fileContent = Files.readAllBytes(file.getFile().toPath());
+                        ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
+                                new FileDTO(file.getRelativeName(),
+                                        fileContent));
+                        sendResult.addCallback(handler::handleSuccess, log::error);
+                    } catch (IOException e) {
+                        log.error("Error occurred while reading file.");
                     }
+
+                }
+                if (handler.successfulDeparture()){
+                    deleteFiles(handler.getFileNames());
                 }
             }
         });
@@ -68,16 +78,18 @@ public class DirectorySniffer {
         log.info("File Watcher started");
     }
 
-    private void successSendHandler(SendResult<Long, FileDTO> fileDTOSendResult) {
+    private void deleteFiles(List<String> fileNames) {
         if (!monitoringFolderPath.endsWith("/")) {
             monitoringFolderPath += "/";
         }
-        File file = new File(monitoringFolderPath + fileDTOSendResult.getProducerRecord().value().getName());
-        file.delete();
-        log.info("File ["
-                + fileDTOSendResult.getProducerRecord().value().getName()
-                + "] teleported to partition "
-                + fileDTOSendResult.getRecordMetadata().partition()
-                + ".");
+
+        for (String fileName : fileNames) {
+            File file = new File(monitoringFolderPath + fileName);
+            file.delete();
+            log.info("File ["
+                    + fileName
+                    + "] deleted locally.");
+        }
+
     }
 }

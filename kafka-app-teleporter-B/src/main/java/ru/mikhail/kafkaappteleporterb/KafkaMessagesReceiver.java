@@ -24,8 +24,9 @@ public class KafkaMessagesReceiver {
     @Value("${teleporter.copy-folder}")
     private String folder;
 
-    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"${spring.kafka.consumer.partition}"}),
-            groupId = "group1")
+//    @KafkaListener(topicPartitions = @TopicPartition(topic = "file-topic", partitions = {"${spring.kafka.consumer.partition}"}),
+//            groupId = "group1")
+    @KafkaListener(topics = "file-topic")
     private void msgListener(ConsumerRecord<Long, String> record) throws JsonProcessingException {
         if (!folder.endsWith("/")) {
             folder += "/";
