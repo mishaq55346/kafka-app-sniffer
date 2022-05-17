@@ -1,6 +1,7 @@
 package ru.mikhail.kafkaappteleportera;
 
 import commons.FileDTO;
+import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.util.List;
+import java.util.concurrent.*;
+import java.util.stream.Collectors;
 
 @Component
 @Log4j2
@@ -27,6 +30,8 @@ public class DirectorySniffer {
 
     @Autowired
     private KafkaSender kafkaSender;
+
+    int operatedFiles = 0;
 
     @PostConstruct
     private void runScan() {
@@ -53,7 +58,12 @@ public class DirectorySniffer {
                 if (addedFiles.isEmpty()) {
                     continue;
                 }
-                SendResultsHandler handler = new SendResultsHandler(addedFiles.size());
+                FileSendListenerThread thread = new FileSendListenerThread(addedFiles
+                        .stream()
+                        .map(ChangedFile::getFile)
+                        .collect(Collectors.toList()));
+                thread.start();
+
                 for (ChangedFile file : addedFiles) {
                     log.info("Teleporting file [" + file.getRelativeName() + "]");
                     try {
@@ -61,7 +71,7 @@ public class DirectorySniffer {
                         ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
                                 new FileDTO(file.getRelativeName(),
                                         fileContent));
-                        sendResult.addCallback(this::handleSuccess, log::error);
+                        sendResult.addCallback(result -> thread.confirmSend(), log::error);
                     } catch (IOException e) {
                         log.error("Error occurred while reading file.");
                     }
@@ -72,13 +82,58 @@ public class DirectorySniffer {
         log.info("File Watcher started");
     }
 
-    private void handleSuccess(SendResult<Long, FileDTO> longFileDTOSendResult) {
-        String fileName = longFileDTOSendResult.getProducerRecord().value().getName();
-        File file = new File(monitoringFolderPath + fileName);
-        if (file.delete()) {
-            log.info("File [" + fileName + "] deleted locally.");
-        } else {
-            log.error("File [" + fileName + "] can not be deleted locally.");
+    class FileSendListenerThread extends Thread {
+        private int sentCount;
+        private final int totalCount;
+        private final List<File> filesToDelete;
+
+        public FileSendListenerThread(List<File> filesToDelete) {
+            this.sentCount = 0;
+            this.totalCount = filesToDelete.size();
+            this.filesToDelete = filesToDelete;
         }
+
+        public void confirmSend(){
+            sentCount++;
+        }
+
+        @SneakyThrows
+        @Override
+        public void run() {
+            ExecutorService service = Executors.newSingleThreadExecutor();
+
+            try {
+                Runnable r = () -> {
+                    do{
+                        log.info(sentCount + " of " + totalCount + " are sent");
+                        try {
+                            Thread.sleep(1000);
+                        } catch (InterruptedException e) {
+                            log.error(e);
+                        }
+                    } while (sentCount != totalCount);
+                };
+
+                Future<?> f = service.submit(r);
+
+                f.get(10, TimeUnit.SECONDS);     // attempt the task for two minutes
+            }
+            catch (final InterruptedException | ExecutionException e) {
+                log.error(e);
+            }
+            catch (final TimeoutException e) {
+                log.error("Send took too long. Aborting deletion.");
+                service.shutdown();
+            }
+            finally {
+                service.shutdown();
+                for (File f : filesToDelete){
+                    f.delete();
+                }
+            }
+
+        }
+
+
     }
 }
