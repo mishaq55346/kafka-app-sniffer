@@ -104,19 +104,20 @@ public class DirectorySniffer {
 
             try {
                 Runnable r = () -> {
-                    do{
+                    while (sentCount != totalCount){
                         log.info(sentCount + " of " + totalCount + " are sent");
                         try {
-                            Thread.sleep(1000);
+                            Thread.sleep(100);
                         } catch (InterruptedException e) {
                             log.error(e);
                         }
-                    } while (sentCount != totalCount);
+                    }
+                    log.info(sentCount + " of " + totalCount + " are sent");
                 };
 
                 Future<?> f = service.submit(r);
 
-                f.get(10, TimeUnit.SECONDS);     // attempt the task for two minutes
+                f.get(5, TimeUnit.SECONDS);     // attempt the task for two minutes
             }
             catch (final InterruptedException | ExecutionException e) {
                 log.error(e);
