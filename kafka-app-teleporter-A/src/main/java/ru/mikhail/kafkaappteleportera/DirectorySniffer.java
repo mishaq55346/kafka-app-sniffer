@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Component
 @Log4j2
@@ -57,9 +58,8 @@ public class DirectorySniffer {
                     continue;
                 }
                 FileSenderListener senderListener = new FileSenderListener(addedFiles.size());
-
+                senderListener.logFilesAdded(addedFiles);
                 for (ChangedFile file : addedFiles) {
-                    log.info("Teleporting file [" + file.getRelativeName() + "]");
                     try {
                         byte[] fileContent = Files.readAllBytes(file.getFile().toPath());
                         ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
@@ -85,18 +85,30 @@ public class DirectorySniffer {
             sentCount = 0;
         }
 
+        public void logFilesAdded(List<ChangedFile> addedFiles){
+            log.info(String.format("[%tc] Found %d files in folder: {%s}",
+                    new Date(),
+                    addedFiles.size(),
+                    addedFiles
+                            .stream()
+                            .map(ChangedFile::getRelativeName)
+                            .collect(Collectors.joining(","))
+                    ));
+
+        }
 
         public void successSend(SendResult<Long, FileDTO> sendResult) {
             sentCount++;
-            log.info(String.format("File [%s] sent successfully at %tc. %d of %d files are sent",
-                            sendResult.getProducerRecord().value().getName(),
-                            new Date()),
-                    sentCount, totalCount);
+            File fileToDelete = new File(monitoringFolderPath + sendResult.getProducerRecord().value().getName());
+            String fileName = fileToDelete.getName();
+            fileToDelete.delete();
+            log.info(String.format("[%tc] File [%s] sent successfully and deleted locally. %d of %d files are sent",
+                    new Date(), fileName, sentCount, totalCount));
         }
 
         public void failSend(Throwable error) {
-            log.info(String.format("File can not be sent due to error: [%s].  %tc",
-                    error.getMessage(), new Date()));
+            log.info(String.format("[%tc] File can not be sent due to error: [%s].",
+                    new Date(), error.getMessage()));
         }
     }
 }
