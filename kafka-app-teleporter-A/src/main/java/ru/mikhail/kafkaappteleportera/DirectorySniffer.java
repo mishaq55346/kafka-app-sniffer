@@ -16,6 +16,7 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ public class DirectorySniffer {
     private KafkaSender kafkaSender;
 
     int operatedFiles = 0;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss:SS");
 
     @PostConstruct
     private void runScan() {
@@ -86,8 +88,8 @@ public class DirectorySniffer {
         }
 
         public void logFilesAdded(List<ChangedFile> addedFiles){
-            log.info(String.format("[%tc] Found %d files in folder: {%s}",
-                    new Date(),
+            log.info(String.format("[%s] Found %d files in folder: {%s}",
+                    dateFormat.format(new Date()),
                     addedFiles.size(),
                     addedFiles
                             .stream()
@@ -102,13 +104,13 @@ public class DirectorySniffer {
             File fileToDelete = new File(monitoringFolderPath + sendResult.getProducerRecord().value().getName());
             String fileName = fileToDelete.getName();
             fileToDelete.delete();
-            log.info(String.format("[%tc] File [%s] sent successfully and deleted locally. %d of %d files are sent",
-                    new Date(), fileName, sentCount, totalCount));
+            log.info(String.format("[%s] File [%s] sent successfully and deleted locally. %d of %d files are sent",
+                    dateFormat.format(new Date()), fileName, sentCount, totalCount));
         }
 
         public void failSend(Throwable error) {
-            log.info(String.format("[%tc] File can not be sent due to error: [%s].",
-                    new Date(), error.getMessage()));
+            log.info(String.format("[%s] File can not be sent due to error: [%s].",
+                    dateFormat.format(new Date()), error.getMessage()));
         }
     }
 }
