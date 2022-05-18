@@ -1,7 +1,6 @@
 package ru.mikhail.kafkaappteleportera;
 
 import commons.FileDTO;
-import lombok.SneakyThrows;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,9 +16,8 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.util.Date;
 import java.util.List;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 @Component
 @Log4j2
@@ -58,11 +56,7 @@ public class DirectorySniffer {
                 if (addedFiles.isEmpty()) {
                     continue;
                 }
-                FileSendListenerThread thread = new FileSendListenerThread(addedFiles
-                        .stream()
-                        .map(ChangedFile::getFile)
-                        .collect(Collectors.toList()));
-                thread.start();
+                FileSenderListener senderListener = new FileSenderListener(addedFiles.size());
 
                 for (ChangedFile file : addedFiles) {
                     log.info("Teleporting file [" + file.getRelativeName() + "]");
@@ -71,7 +65,7 @@ public class DirectorySniffer {
                         ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
                                 new FileDTO(file.getRelativeName(),
                                         fileContent));
-                        sendResult.addCallback(result -> thread.confirmSend(), log::error);
+                        sendResult.addCallback(senderListener::successSend, senderListener::failSend);
                     } catch (IOException e) {
                         log.error("Error occurred while reading file.");
                     }
@@ -82,59 +76,27 @@ public class DirectorySniffer {
         log.info("File Watcher started");
     }
 
-    class FileSendListenerThread extends Thread {
+    class FileSenderListener {
         private int sentCount;
         private final int totalCount;
-        private final List<File> filesToDelete;
 
-        public FileSendListenerThread(List<File> filesToDelete) {
-            this.sentCount = 0;
-            this.totalCount = filesToDelete.size();
-            this.filesToDelete = filesToDelete;
+        public FileSenderListener(int totalCount) {
+            this.totalCount = totalCount;
+            sentCount = 0;
         }
 
-        public void confirmSend(){
+
+        public void successSend(SendResult<Long, FileDTO> sendResult) {
             sentCount++;
+            log.info(String.format("File [%s] sent successfully at %tc. %d of %d files are sent",
+                            sendResult.getProducerRecord().value().getName(),
+                            new Date()),
+                    sentCount, totalCount);
         }
 
-        @SneakyThrows
-        @Override
-        public void run() {
-            ExecutorService service = Executors.newSingleThreadExecutor();
-
-            try {
-                Runnable r = () -> {
-                    while (sentCount != totalCount){
-                        log.info(sentCount + " of " + totalCount + " are sent");
-                        try {
-                            Thread.sleep(100);
-                        } catch (InterruptedException e) {
-                            log.error(e);
-                        }
-                    }
-                    log.info(sentCount + " of " + totalCount + " are sent");
-                };
-
-                Future<?> f = service.submit(r);
-
-                f.get(5, TimeUnit.SECONDS);     // attempt the task for two minutes
-            }
-            catch (final InterruptedException | ExecutionException e) {
-                log.error(e);
-            }
-            catch (final TimeoutException e) {
-                log.error("Send took too long. Aborting deletion.");
-                service.shutdown();
-            }
-            finally {
-                service.shutdown();
-                for (File f : filesToDelete){
-                    f.delete();
-                }
-            }
-
+        public void failSend(Throwable error) {
+            log.info(String.format("File can not be sent due to error: [%s].  %tc",
+                    error.getMessage(), new Date()));
         }
-
-
     }
 }
