@@ -1,7 +1,7 @@
 package ru.mikhail.kafkaappteleportera;
 
 import commons.FileDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.devtools.filewatch.ChangedFile;
 import org.springframework.boot.devtools.filewatch.ChangedFiles;
@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.util.List;
 
 @Component
+@Log4j2
 @PropertySource("classpath:application.properties")
 public class FileSender {
     @Value("${teleporter.monitoring-folder}")
@@ -37,12 +38,8 @@ public class FileSender {
             monitoringFolderPath += "/";
         }
         File monitoringFolder = new File(monitoringFolderPath);
-        if (!monitoringFolder.isDirectory()) {
-            fileSenderListener.logError("Can't instantiate directory. Check path");
-            System.exit(-1);
-        }
         if (!monitoringFolder.exists()) {
-            fileSenderListener.logError("No directory found. Creating new one");
+            log.error("No directory found. Creating new one");
             monitoringFolder.mkdir();
         }
         FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
@@ -66,13 +63,13 @@ public class FileSender {
                                         fileContent));
                         sendResult.addCallback(fileSenderListener::successSend, fileSenderListener::failSend);
                     } catch (IOException e) {
-                        fileSenderListener.logError("Error occurred while reading file.");
+                        log.error("Error occurred while reading file.");
                     }
                 }
             }
         });
         fileSystemWatcher.start();
-        fileSenderListener.logInfo("Directory Scanner started");
+        log.info("Directory Scanner started");
     }
 
 
