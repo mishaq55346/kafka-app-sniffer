@@ -2,6 +2,7 @@ package ru.mikhail.kafkaappteleportera;
 
 import commons.FileDTO;
 import lombok.extern.log4j.Log4j2;
+import org.apache.catalina.manager.StatusManagerServlet;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.devtools.filewatch.ChangedFile;
 import org.springframework.boot.devtools.filewatch.ChangedFiles;
@@ -38,6 +39,10 @@ public class FileSender {
             monitoringFolderPath += "/";
         }
         File monitoringFolder = new File(monitoringFolderPath);
+        if (monitoringFolder.isFile()){
+            log.error("This path is a file. Change to folder");
+            System.exit(-1);
+        }
         if (!monitoringFolder.exists()) {
             log.error("No directory found. Creating new one");
             monitoringFolder.mkdir();
