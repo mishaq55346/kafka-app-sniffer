@@ -23,7 +23,7 @@ public class FileSenderListener {
     private String monitoringFolderPath;
     @Autowired
     @Qualifier("fileEventLogger")
-    EventLogger logger;
+    private EventLogger logger;
     private int sentCount;
     private int totalCount;
 

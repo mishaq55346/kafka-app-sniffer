@@ -16,9 +16,9 @@ import java.util.Date;
 @PropertySource("classpath:application.properties")
 public class FileEventLogger implements EventLogger{
     @Value("${logger.file.path}")
-    String filePath;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss:SS");
-    File loggingFile;
+    private String filePath;
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss:SS");
+    private File loggingFile;
     @PostConstruct
     public void init() throws IOException {
         loggingFile = new File(filePath);
