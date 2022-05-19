@@ -1,7 +1,6 @@
 package ru.mikhail.kafkaappteleportera;
 
 import commons.FileDTO;
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.devtools.filewatch.ChangedFile;
@@ -16,23 +15,21 @@ import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Component
-@Log4j2
 @PropertySource("classpath:application.properties")
-public class DirectorySniffer {
+public class FileSender {
     @Value("${teleporter.monitoring-folder}")
     private String monitoringFolderPath;
+    private final FileSenderListener fileSenderListener;
+    private final KafkaSender kafkaSender;
 
-    @Autowired
-    private KafkaSender kafkaSender;
+    public FileSender(FileSenderListener fileSenderListener, KafkaSender kafkaSender) {
+        this.fileSenderListener = fileSenderListener;
+        this.kafkaSender = kafkaSender;
+    }
 
-    int operatedFiles = 0;
-    SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy HH:mm:ss:SS");
 
     @PostConstruct
     private void runScan() {
@@ -41,11 +38,11 @@ public class DirectorySniffer {
         }
         File monitoringFolder = new File(monitoringFolderPath);
         if (!monitoringFolder.isDirectory()) {
-            log.error("Can't instantiate directory. Check path");
+            fileSenderListener.logError("Can't instantiate directory. Check path");
             System.exit(-1);
         }
         if (!monitoringFolder.exists()) {
-            log.info("No directory found. Creating new one");
+            fileSenderListener.logError("No directory found. Creating new one");
             monitoringFolder.mkdir();
         }
         FileSystemWatcher fileSystemWatcher = new FileSystemWatcher();
@@ -59,58 +56,24 @@ public class DirectorySniffer {
                 if (addedFiles.isEmpty()) {
                     continue;
                 }
-                FileSenderListener senderListener = new FileSenderListener(addedFiles.size());
-                senderListener.logFilesAdded(addedFiles);
+                fileSenderListener.setTotalCount(addedFiles.size());
+                fileSenderListener.logFilesAdded(addedFiles);
                 for (ChangedFile file : addedFiles) {
                     try {
                         byte[] fileContent = Files.readAllBytes(file.getFile().toPath());
                         ListenableFuture<SendResult<Long, FileDTO>> sendResult = kafkaSender.send(
                                 new FileDTO(file.getRelativeName(),
                                         fileContent));
-                        sendResult.addCallback(senderListener::successSend, senderListener::failSend);
+                        sendResult.addCallback(fileSenderListener::successSend, fileSenderListener::failSend);
                     } catch (IOException e) {
-                        log.error("Error occurred while reading file.");
+                        fileSenderListener.logError("Error occurred while reading file.");
                     }
                 }
             }
         });
         fileSystemWatcher.start();
-        log.info("File Watcher started");
+        fileSenderListener.logInfo("Directory Scanner started");
     }
 
-    class FileSenderListener {
-        private int sentCount;
-        private final int totalCount;
 
-        public FileSenderListener(int totalCount) {
-            this.totalCount = totalCount;
-            sentCount = 0;
-        }
-
-        public void logFilesAdded(List<ChangedFile> addedFiles){
-            log.info(String.format("[%s] Found %d files in folder: {%s}",
-                    dateFormat.format(new Date()),
-                    addedFiles.size(),
-                    addedFiles
-                            .stream()
-                            .map(ChangedFile::getRelativeName)
-                            .collect(Collectors.joining(","))
-                    ));
-
-        }
-
-        public void successSend(SendResult<Long, FileDTO> sendResult) {
-            sentCount++;
-            File fileToDelete = new File(monitoringFolderPath + sendResult.getProducerRecord().value().getName());
-            String fileName = fileToDelete.getName();
-            fileToDelete.delete();
-            log.info(String.format("[%s] File [%s] sent successfully and deleted locally. %d of %d files are sent",
-                    dateFormat.format(new Date()), fileName, sentCount, totalCount));
-        }
-
-        public void failSend(Throwable error) {
-            log.info(String.format("[%s] File can not be sent due to error: [%s].",
-                    dateFormat.format(new Date()), error.getMessage()));
-        }
-    }
 }
